@@ -1,8 +1,8 @@
 // index.js
 import { getAuctionPage, getElectionData } from "./fetch";
-import { Pet } from "./petObject";
+import { getPetLists, queryPetList } from "./petObject";
 
 (async () => {
-  const pets = await getAuctionPage(0);
-  console.log(pets);
+  await getAuctionPage(0);
+  console.log(queryPetList('legendary', 'sheep'));
 })();

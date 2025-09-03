@@ -1,5 +1,5 @@
 // fetch.js
-import { Pet } from "./petObject";
+import { PetList, addPet, getPetLists } from "./petObject";
 async function getElectionData() {
     try {
         const res = await fetch('https://api.hypixel.net/v2/resources/skyblock/election');
@@ -16,8 +16,7 @@ async function getElectionData() {
 }
 
 
-export async function getAuctionPage(page) {
-    let pets = [];
+async function getAuctionPage(page) {
     try {
         const res = await fetch(`https://api.hypixel.net/v2/skyblock/auctions?page=${page}`);
         if(!res.ok) throw new Error('HTTP error ' + res.status);
@@ -25,14 +24,12 @@ export async function getAuctionPage(page) {
 
         for(let a of data.auctions){
             if (a.bin && (a.tier == 'EPIC' || a.tier == 'LEGENDARY') && ((a.item_name).startsWith('[Lvl 1]') || (a.item_name).startsWith('[Lvl 100]'))) {
-                let match = (a.item_name).match(/\[Lvl (\d+)\]\s+(.+)/);
-                let currentPet = new Pet(match[2], a.tier);
-                pets.push(currentPet);
+                addPet(a);
             }
         }
     } catch (err) {
-        console.error('Failed to fetch election data: ', err);
+        console.error('Failed to fetch auction data: ', err);
     }
-
-    return pets
 }
+
+export { getAuctionPage }
