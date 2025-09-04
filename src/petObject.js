@@ -1,3 +1,5 @@
+// petObject.js
+
 const XP_TO_MAX_EPIC = 18608500;
 const XP_TO_MAX_LEGEN = 25353230;
 
@@ -8,7 +10,7 @@ class Pet {
         this.rarity = rarity;
         this.priceMinLvl = priceMinLvl;
         this.priceMaxLvl = priceMaxLvl;
-        this.coinPerXp = calcCoinPerXp(priceMinLvl, priceMaxLvl);
+        this.coinPerXp = calcCoinPerXp(priceMinLvl, priceMaxLvl, this.rarity);
         this.item = {};
     }
 }
@@ -31,7 +33,7 @@ class PetList {
 }
 
 
-const petLists = {};
+let petLists = {};
 
 function addPet(item) {
     const match = (item.item_name).match(/\[Lvl (\d+)\]\s+(.+)/);
@@ -41,8 +43,18 @@ function addPet(item) {
         petLists[key] = new PetList(petName, item.tier);
     }
     petLists[key].tryAddPet(item);
+    updatePetLists(petLists);
 }
 
+
+function updatePetLists(list){
+    localStorage.setItem("petLists", JSON.stringify(list));
+}
+
+
+function setPetLists(list){
+    petLists = list;
+}
 
 
 function getPetLists() {
@@ -52,10 +64,15 @@ function getPetLists() {
 
 function queryPetList(rarity, name, level){
     const formatedRarity = rarity.toUpperCase();
-    const formatedName = name.charAt(0).toUpperCase() + name.slice(1)
+    const formatedName = capitalizeWords(name)
     const key = `${formatedRarity} ${formatedName}`;
     if(level === undefined || (level != 100 && level != 1)) {
-        return petLists[key];
+        if(petLists[key] === undefined){
+            console.warn('No pet found with matching criteria')
+            return false;
+        }else {
+            return petLists[key];
+        }
     }else{
         const result = petLists[key];
         result.matchingPets = petLists[key].matchingPets.filter((word) => word.item_name.startsWith(`[Lvl ${level}]`));
@@ -64,5 +81,45 @@ function queryPetList(rarity, name, level){
 }
 
 
+function queryPetProfit(rarity, name){
+    const formatedRarity = rarity.toUpperCase();
+    const formatedName = capitalizeWords(name)
 
-export { PetList, getPetLists, addPet, queryPetList };
+    if(queryPetList(rarity, name) !== false){
+        const matchingLvlOne = queryPetList(rarity, name, 1).matchingPets;
+        const matchingLvlMax = queryPetList(rarity, name, 100).matchingPets;
+        
+        const minPriceOne = matchingLvlOne.length > 0 
+            ? Math.min(...matchingLvlOne.map(v => v.starting_bid)) 
+            : Infinity;
+
+        const minPriceMax = matchingLvlMax.length > 0 
+            ? Math.min(...matchingLvlMax.map(v => v.starting_bid)) 
+            : Infinity;
+
+        const pet = new Pet(formatedName, formatedRarity, minPriceOne, minPriceMax);
+        return pet;
+    }else {
+        return Infinity;
+    }
+}
+
+
+function calcCoinPerXp(priceMinLvl, priceMaxLvl, rarity){
+    if(rarity === 'LEGENDARY'){
+        return((priceMaxLvl - priceMinLvl) / XP_TO_MAX_LEGEN)
+    }else if(rarity === 'EPIC'){
+        return((priceMaxLvl - priceMinLvl) / XP_TO_MAX_EPIC)
+    }
+}
+
+
+function capitalizeWords(str) {
+    return str
+        .split(" ")                
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1)) 
+        .join(" ");                
+}
+
+
+export { PetList, getPetLists, addPet, queryPetList, queryPetProfit, setPetLists };
