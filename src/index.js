@@ -4,5 +4,5 @@ import { getPetLists, queryPetList } from "./petObject";
 
 (async () => {
   await getAuctionPage(0);
-  console.log(queryPetList('legendary', 'sheep'));
+  console.log(queryPetList('legendary', 'sheep', 1));
 })();

@@ -1,6 +1,19 @@
 const XP_TO_MAX_EPIC = 18608500;
 const XP_TO_MAX_LEGEN = 25353230;
 
+
+class Pet {
+    constructor(name, rarity, priceMinLvl, priceMaxLvl) {
+        this.name = name;
+        this.rarity = rarity;
+        this.priceMinLvl = priceMinLvl;
+        this.priceMaxLvl = priceMaxLvl;
+        this.coinPerXp = calcCoinPerXp(priceMinLvl, priceMaxLvl);
+        this.item = {};
+    }
+}
+
+
 class PetList {
     constructor(name, rarity) {
         this.name = name;
@@ -30,15 +43,26 @@ function addPet(item) {
     petLists[key].tryAddPet(item);
 }
 
+
+
 function getPetLists() {
     return petLists;
 }
 
-function queryPetList(rarity, name){
+
+function queryPetList(rarity, name, level){
     const formatedRarity = rarity.toUpperCase();
     const formatedName = name.charAt(0).toUpperCase() + name.slice(1)
     const key = `${formatedRarity} ${formatedName}`;
-    return petLists[key];
+    if(level === undefined || (level != 100 && level != 1)) {
+        return petLists[key];
+    }else{
+        const result = petLists[key];
+        result.matchingPets = petLists[key].matchingPets.filter((word) => word.item_name.startsWith(`[Lvl ${level}]`));
+        return result;
+    }
 }
+
+
 
 export { PetList, getPetLists, addPet, queryPetList };
