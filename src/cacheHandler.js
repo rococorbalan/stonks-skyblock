@@ -1,6 +1,5 @@
 // cacheHandler.js
 const auctionCache = {
-    data: null,
     lastFetch: 0
 };
 
@@ -8,7 +7,7 @@ function checkFetchTime(time) {
     const latestCache = getAuctionCache(); 
     const lastFetch = latestCache?.lastFetch || 0;
 
-    return (!latestCache || time - lastFetch > 120000);
+    return (!latestCache || time - lastFetch > 300000);
 }
 
 function getAuctionCache() {
@@ -24,8 +23,8 @@ function getAuctionCache() {
 }
 
 
-function updateAuctionCache(time, info){
-    const cache = { lastFetch: time, info};
+function updateAuctionCache(time){
+    const cache = { lastFetch: time};
     localStorage.setItem("auctionCache", JSON.stringify(cache));
 }
 

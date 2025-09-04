@@ -1,8 +1,6 @@
 // fetch.js
-import { PetList, addPet, getPetLists, setPetList, setPetLists } from "./petObject";
+import { PetList, addPet, getPetLists, setPetList, setPetLists, slimAuction } from "./petObject";
 import { checkFetchTime, getAuctionCache, updateAuctionCache } from "./cacheHandler";
-
-let totalPages;
 
 
 async function getElectionData() {
@@ -22,41 +20,52 @@ async function getElectionData() {
 
 
 async function getAuctionPage(page) {
-    const now = Date.now();
+    try {
+        const res = await fetch(`https://api.hypixel.net/v2/skyblock/auctions?page=${page}`);
+        if(!res.ok) throw new Error('HTTP error ' + res.status);
+        const data = await res.json();
 
-    if(checkFetchTime(now)){
-        console.log('fetching')
-        try {
-            const res = await fetch(`https://api.hypixel.net/v2/skyblock/auctions?page=${page}`);
-            if(!res.ok) throw new Error('HTTP error ' + res.status);
-            const data = await res.json();
-
-            totalPages = data.totalPages;
-
-            for(let a of data.auctions){
-                if (a.bin && (a.tier == 'EPIC' || a.tier == 'LEGENDARY') && ((a.item_name).startsWith('[Lvl 1]') || (a.item_name).startsWith('[Lvl 100]'))) {
-                    addPet(a);
-                }
+        for(let a of data.auctions){
+            if (a.bin && (a.tier == 'EPIC' || a.tier == 'LEGENDARY') && 
+                ((a.item_name).startsWith('[Lvl 1]') || (a.item_name).startsWith('[Lvl 100]')) && 
+                (a.item_name).indexOf('✦') === -1 ) {
+                    const slim = slimAuction(a);
+                    addPet(slim);
             }
-            updateAuctionCache(now, data);
+        }
+           
         } catch (err) {
             console.error('Failed to fetch auction data: ', err);
         }
-        
-    }else {
-        console.log('cache');
-        const cacheList = localStorage.getItem("petLists");
-        if (!cacheList) return null;
+}
+
+
+async function getAllAuction(){
+    let totalPages = 1;
+    const res = await fetch(`https://api.hypixel.net/v2/skyblock/auctions?page=0`);
+    if(!res.ok) throw new Error('HTTP error ' + res.status);
+    const data = await res.json();
+    
+    totalPages = data.totalPages;
+    const now = Date.now();
+    const cacheList = sessionStorage.getItem("petLists");
+    if (cacheList) {
         try {
-            setPetLists(JSON.parse(cacheList))
+            setPetLists(JSON.parse(cacheList));
+            console.log("Cache:", getPetLists());
         } catch (err) {
             console.error("Failed to parse auction cache:", err);
         }
     }
+    if(checkFetchTime(now)){
+        console.log(getPetLists());
+
+        console.log('fetching');
+        for(let i = 0; i < totalPages; i++){
+            await getAuctionPage(i);
+        }
+        updateAuctionCache(now);
+    }
 }
 
-//async function getAllAuction(totalPages){
-//    for(let i = 0; i < totalPages; )
-//}
-
-export { getAuctionPage }
+export { getAuctionPage, getAllAuction }

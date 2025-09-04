@@ -48,7 +48,7 @@ function addPet(item) {
 
 
 function updatePetLists(list){
-    localStorage.setItem("petLists", JSON.stringify(list));
+    sessionStorage.setItem("petLists", JSON.stringify(list));
 }
 
 
@@ -75,7 +75,11 @@ function queryPetList(rarity, name, level){
         }
     }else{
         const result = petLists[key];
-        result.matchingPets = petLists[key].matchingPets.filter((word) => word.item_name.startsWith(`[Lvl ${level}]`));
+        if(level === 1){
+            result.matchingPets = petLists[key].matchingPets.filter((word) => word.item_name.startsWith(`[Lvl 1]`));
+        }else {
+            result.matchingPets = petLists[key].matchingPets.filter((word) => word.item_name.startsWith(`[Lvl 100]`));
+        }
         return result;
     }
 }
@@ -114,6 +118,18 @@ function calcCoinPerXp(priceMinLvl, priceMaxLvl, rarity){
 }
 
 
+function slimAuction(auction) {
+    return {
+        bin: auction.bin,
+        item_lore: auction.item_lore,
+        item_name: auction.item_name,
+        starting_bid: auction.starting_bid,
+        tier: auction.tier
+    };
+}
+
+
+
 function capitalizeWords(str) {
     return str
         .split(" ")                
@@ -122,4 +138,4 @@ function capitalizeWords(str) {
 }
 
 
-export { PetList, getPetLists, addPet, queryPetList, queryPetProfit, setPetLists };
+export { PetList, getPetLists, addPet, queryPetList, queryPetProfit, setPetLists, slimAuction };

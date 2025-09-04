@@ -12,7 +12,7 @@ module.exports = merge(common, {
         open: {
             app: {
                 name: 'google-chrome',  
-                arguments: ['--incognito', '--new-window', '--disable-extensions']
+                arguments: ['--incognito', '--disable-extensions']
             } 
         }
     }
