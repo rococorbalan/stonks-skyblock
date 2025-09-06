@@ -38,7 +38,7 @@ let petLists = {};
 function addPet(item) {
     const match = (item.item_name).match(/\[Lvl (\d+)\]\s+(.+)/);
     const petName = match[2];
-    const key = `${item.tier} ${[petName]}`;
+    const key = `${item.tier} ${petName}`;
     if (!petLists[key]) {
         petLists[key] = new PetList(petName, item.tier);
     }
@@ -74,11 +74,11 @@ function queryPetList(rarity, name, level){
             return petLists[key];
         }
     }else{
-        const result = petLists[key];
+        const result = structuredClone(petLists[key]);
         if(level === 1){
-            result.matchingPets = petLists[key].matchingPets.filter((word) => word.item_name.startsWith(`[Lvl 1]`));
+            result.matchingPets = result.matchingPets.filter((word) => word.item_name.startsWith(`[Lvl 1]`));
         }else {
-            result.matchingPets = petLists[key].matchingPets.filter((word) => word.item_name.startsWith(`[Lvl 100]`));
+            result.matchingPets = result.matchingPets.filter((word) => word.item_name.startsWith(`[Lvl 100]`));
         }
         return result;
     }

@@ -26,7 +26,7 @@ async function getAuctionPage(page) {
         const data = await res.json();
 
         for(let a of data.auctions){
-            if (a.bin && (a.tier == 'EPIC' || a.tier == 'LEGENDARY') && 
+            if (a.bin && (a.tier == 'EPIC' || a.tier == 'LEGENDARY' || a.tier == 'MYTHIC') && 
                 ((a.item_name).startsWith('[Lvl 1]') || (a.item_name).startsWith('[Lvl 100]')) && 
                 (a.item_name).indexOf('✦') === -1 ) {
                     const slim = slimAuction(a);
@@ -58,13 +58,12 @@ async function getAllAuction(){
         }
     }
     if(checkFetchTime(now)){
-        console.log(getPetLists());
-
         console.log('fetching');
         for(let i = 0; i < totalPages; i++){
             await getAuctionPage(i);
         }
         updateAuctionCache(now);
+        console.log(getPetLists());
     }
 }
 
